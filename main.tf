@@ -31,7 +31,8 @@ resource "aws_security_group" "app" {
   tags {
     "Name"        = "${join(var.separator, compact(list(var.customer, var.project, var.environment, var.app)))}"
     "Terraform"   = "true"
-    "Customer"    = "${var.customer}"
+    "Customer"    = "${length(var.customer) > 0 ? var.customer : "N/A"}"
+    "Project"     = "${length(var.project) > 0 ? var.project : "N/A"}"
     "Environment" = "${var.environment}"
   }
 }
@@ -194,8 +195,8 @@ resource "aws_elastic_beanstalk_environment" "app" {
 
   tags {
     "Terraform"   = "true"
-    "Customer"    = "${var.customer}"
+    "Customer"    = "${length(var.customer) > 0 ? var.customer : "N/A"}"
     "Environment" = "${var.environment}"
-    "Project"     = "${var.project}"
+    "Project"     = "${length(var.project) > 0 ? var.project : "N/A"}"
   }
 }
