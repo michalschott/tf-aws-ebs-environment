@@ -14,6 +14,7 @@ This simple module is designed to:
 | asg_max_size | Maximum size of ASG group. | string | `1` | no |
 | asg_min_size | Minimum size of ASG group. | string | `1` | no |
 | customer | Customer name. | string | `` | no |
+| ebs_app | EBS App name. | string | - | yes |
 | ec2_instance_type | EC2 instance type. | string | - | yes |
 | ec2_key_name | SSH Key Name to insert. | string | `` | no |
 | elb_connection_draining_enabled | Should connection draining be enabled. | string | `true` | no |
@@ -41,7 +42,7 @@ This simple module is designed to:
 | Name | Description |
 |------|-------------|
 | app-fqdn | Application FQDN. |
-| role-arn | IAM role ARN. |
+| role-name | IAM role name. |
 
 Example Usage
 ----------------
@@ -52,6 +53,7 @@ Including an example of how to use this module:
       source             = "git::https://github.com/michalschott/tf-aws-ebs-environment.git?ref=master"
       app                = "MyApp"
       app_solution_stack = "64bit Amazon Linux 2017.03 v2.7.4 running Multi-container Docker 17.03.1-ce (Generic)"
+      ebs_app            = "ElasticBeanstalkAppName"
       ec2_instance_type  = "t2.micro"
       environment        = "MyEnvironmentName"
       vpc_ec2_subnets    = ["private-sub-az1", "private-sub-az2"]
