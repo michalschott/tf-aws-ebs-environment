@@ -4,6 +4,8 @@ tf-aws-ebs-environment
 This simple module is designed to:
 * create Elastic Beanstalk environment inside provided application (inside VPC)
 
+**This module is designed to work with Elastic Beanstalk Docker platforms.**
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
