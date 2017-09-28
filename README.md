@@ -21,6 +21,7 @@ This simple module is designed to:
 | ec2_key_name | SSH Key Name to insert. | string | `` | no |
 | elb_connection_draining_enabled | Should connection draining be enabled. | string | `true` | no |
 | elb_connection_draining_timeout | Connection draining timeout in seconds. | string | `180` | no |
+| elb_ssl_cert | ARN of ceriticate. | string | - | yes |
 | environment | Environment name. | string | - | yes |
 | healthcheck_url | Application healthcheck URL. | string | `TCP:80` | no |
 | http_cidr_egress | CIDR whitelist outbound ELB connectivity. | string | `<list>` | no |
@@ -57,6 +58,7 @@ Including an example of how to use this module:
       app_solution_stack = "64bit Amazon Linux 2017.03 v2.7.4 running Multi-container Docker 17.03.1-ce (Generic)"
       ebs_app            = "ElasticBeanstalkAppName"
       ec2_instance_type  = "t2.micro"
+      elb_ssl_cert       = "arn::...."
       environment        = "MyEnvironmentName"
       vpc_ec2_subnets    = ["private-sub-az1", "private-sub-az2"]
       vpc_elb_subnets    = ["public-sub-az1", "public-sub-az2"]

@@ -46,6 +46,15 @@ resource "aws_security_group_rule" "app_ingress_tcp_80_cidr" {
   type              = "ingress"
 }
 
+resource "aws_security_group_rule" "app_ingress_tcp_443_cidr" {
+  security_group_id = "${aws_security_group.app.id}"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  cidr_blocks       = "${var.http_cidr_ingress}"
+  type              = "ingress"
+}
+
 resource "aws_security_group_rule" "app_egress_tcp_80" {
   security_group_id = "${aws_security_group.app.id}"
   from_port         = 80
@@ -113,6 +122,18 @@ resource "aws_elastic_beanstalk_environment" "app" {
     namespace = "aws:elb:loadbalancer"
     name      = "ManagedSecurityGroup"
     value     = "${aws_security_group.app.id}"
+  }
+
+  setting {
+    namespace = "aws:elb:loadbalancer"
+    name      = "LoadBalancerHTTPSPort"
+    value     = "443"
+  }
+
+  setting {
+    namespace = "aws:elb:loadbalancer"
+    name      = "SSLCertificateId"
+    value     = "${var.elb_ssl_cert}"
   }
 
   setting {
