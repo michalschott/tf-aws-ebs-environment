@@ -1,26 +1,60 @@
-resource "aws_iam_role" "app" {
-  name = "${join(var.separator, compact(list(var.customer, var.project, var.app, var.environment)))}"
+data "aws_iam_policy_document" "app" {
+  statement {
+    sid = ""
 
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    principals {
+      type        = "Service"
+      identifiers = [
+        "ec2.amazonaws.com",
+      ]
     }
-  ]
+  }
 }
-EOF
+
+resource "aws_iam_role" "app" {
+  name               = "${join(var.separator, compact(list(var.customer, var.project, var.app, var.environment)))}"
+  assume_role_policy = "${data.aws_iam_policy_document.app.json}"
 }
 
 resource "aws_iam_instance_profile" "app" {
   name = "${join(var.separator, compact(list(var.customer, var.project, var.app, var.environment)))}"
   role = "${aws_iam_role.app.name}"
+}
+
+data "aws_iam_policy_document" "ebs" {
+  statement {
+    sid = ""
+
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    principals {
+      type        = "Service"
+      identifiers = [
+        "elasticbeanstalk.amazonaws.com",
+      ]
+    }
+  }
+}
+
+resource "aws_iam_role" "ebs" {
+  name               = "${join(var.separator, compact(list(var.customer, var.project, var.app, var.environment, "ebs")))}"
+  assume_role_policy = "${data.aws_iam_policy_document.ebs.json}"
+}
+
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkEnhancedHealth" {
+  role       = "${aws_iam_role.ebs.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
+}
+
+resource "aws_iam_role_policy_attachment" "AWSElasticBeanstalkService" {
+  role       = "${aws_iam_role.ebs.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService"
 }
 
 resource "aws_security_group" "app" {
@@ -38,6 +72,7 @@ resource "aws_security_group" "app" {
 }
 
 resource "aws_security_group_rule" "app_ingress_tcp_80_cidr" {
+  count             = "${var.elb_ssl_cert == "" ? 1 : 0}"
   security_group_id = "${aws_security_group.app.id}"
   from_port         = 80
   to_port           = 80
@@ -47,6 +82,7 @@ resource "aws_security_group_rule" "app_ingress_tcp_80_cidr" {
 }
 
 resource "aws_security_group_rule" "app_ingress_tcp_443_cidr" {
+  count             = "${var.elb_ssl_cert == "" ? 0 : 1}"
   security_group_id = "${aws_security_group.app.id}"
   from_port         = 443
   to_port           = 443
@@ -125,14 +161,68 @@ resource "aws_elastic_beanstalk_environment" "app" {
   }
 
   setting {
-    namespace = "aws:elb:loadbalancer"
-    name      = "LoadBalancerHTTPSPort"
-    value     = "443"
+    namespace = "aws:elb:listener"
+    name      = "ListenerProtocol"
+    value     = "HTTP"
   }
 
   setting {
-    namespace = "aws:elb:loadbalancer"
+    namespace = "aws:elb:listener"
+    name      = "InstancePort"
+    value     = "80"
+  }
+
+  setting {
+    namespace = "aws:elb:listener"
+    name      = "ListenerEnabled"
+    value     = "${var.elb_ssl_cert == "" ? "true" : "false"}"
+  }
+
+  setting {
+    namespace = "aws:elb:listener:443"
+    name      = "ListenerProtocol"
+    value     = "HTTPS"
+  }
+
+  setting {
+    namespace = "aws:elb:listener:443"
+    name      = "InstancePort"
+    value     = "80"
+  }
+
+  setting {
+    namespace = "aws:elb:listener:443"
     name      = "SSLCertificateId"
+    value     = "${var.elb_ssl_cert}"
+  }
+
+  setting {
+    namespace = "aws:elb:listener:443"
+    name      = "ListenerEnabled"
+    value     = "${var.elb_ssl_cert == "" ? "false" : "true"}"
+  }
+
+  setting {
+    namespace = "aws:elbv2:listener:default"
+    name      = "ListenerEnabled"
+    value     = "${var.elb_ssl_cert == "" ? "true" : "false"}"
+  }
+
+  setting {
+    namespace = "aws:elbv2:listener:443"
+    name      = "ListenerEnabled"
+    value     = "${var.elb_ssl_cert == "" ? "false" : "true"}"
+  }
+
+  setting {
+    namespace = "aws:elbv2:listener:443"
+    name      = "Protocol"
+    value     = "HTTPS"
+  }
+
+  setting {
+    namespace = "aws:elbv2:listener:443"
+    name      = "SSLCertificateArns"
     value     = "${var.elb_ssl_cert}"
   }
 
@@ -266,6 +356,37 @@ resource "aws_elastic_beanstalk_environment" "app" {
     namespace = "aws:elasticbeanstalk:cloudwatch:logs"
     name      = "RetentionInDays"
     value     = "${var.logs_retention}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:command"
+    name      = "BatchSizeType"
+    value     = "${var.batch_size_type}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:command"
+    name      = "BatchSize"
+    value     = "${var.batch_size}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:environment"
+    name      = "LoadBalancerType"
+    value     = "classic"
+    value     = "${var.loadbalancer_type}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:environment"
+    name      = "ServiceRole"
+    value     = "${aws_iam_role.ebs.name}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:healthreporting:system"
+    name      = "SystemType"
+    value     = "enhanced"
   }
 
   tags {
