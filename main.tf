@@ -72,7 +72,6 @@ resource "aws_security_group" "app" {
 }
 
 resource "aws_security_group_rule" "app_ingress_tcp_80_cidr" {
-  count             = "${var.elb_ssl_cert == "" ? 1 : 0}"
   security_group_id = "${aws_security_group.app.id}"
   from_port         = 80
   to_port           = 80
@@ -175,7 +174,7 @@ resource "aws_elastic_beanstalk_environment" "app" {
   setting {
     namespace = "aws:elb:listener"
     name      = "ListenerEnabled"
-    value     = "${var.elb_ssl_cert == "" ? "true" : "false"}"
+    value     = "true"
   }
 
   setting {
