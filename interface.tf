@@ -197,6 +197,19 @@ variable "loadbalancer_type" {
   description = "Loadbalancer type."
 }
 
+variable "env_default_key" {
+  default = "DEFAULT_ENV_%d"
+}
+
+variable "env_default_value" {
+  default = "UNSET"
+}
+
+variable "env_vars" {
+  default = {}
+  type    = "map"
+}
+
 output "role-name" {
   description = "IAM role name."
   value       = "${aws_iam_role.app.name}"

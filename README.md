@@ -32,6 +32,9 @@ Originally I'm using it with Docker solution stack, but I'm attaching docker-spe
 | elb_connection_draining_enabled | Should connection draining be enabled. | string | `true` | no |
 | elb_connection_draining_timeout | Connection draining timeout in seconds. | string | `180` | no |
 | elb_ssl_cert | ARN of certificate to use. | string | `` | no |
+| env_default_key |  | string | `DEFAULT_ENV_%d` | no |
+| env_default_value |  | string | `UNSET` | no |
+| env_vars |  | map | `<map>` | no |
 | environment | Environment name. | string | - | yes |
 | healthcheck_url | Application healthcheck URL. | string | `TCP:80` | no |
 | http_cidr_egress | CIDR whitelist outbound ELB connectivity. | string | `<list>` | no |

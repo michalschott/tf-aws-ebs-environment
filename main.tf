@@ -388,6 +388,36 @@ resource "aws_elastic_beanstalk_environment" "app" {
     value     = "enhanced"
   }
 
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 0))), 0)}"
+    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 0))), 0), var.env_default_value)}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 1))), 1)}"
+    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 1))), 1), var.env_default_value)}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 2))), 2)}"
+    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 2))), 2), var.env_default_value)}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 3))), 3)}"
+    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 3))), 3), var.env_default_value)}"
+  }
+
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 4))), 4)}"
+    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 4))), 4), var.env_default_value)}"
+  }
+
   tags {
     "Terraform"   = "true"
     "Customer"    = "${length(var.customer) > 0 ? var.customer : "N/A"}"
