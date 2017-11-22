@@ -59,6 +59,7 @@ Originally I'm using it with Docker solution stack, but I'm attaching docker-spe
 | Name | Description |
 |------|-------------|
 | app-fqdn | Application FQDN. |
+| full-environment-name |  |
 | loadbalancers | Elastic load balancers in use by this environment. |
 | role-name | IAM role name. |
 
